@@ -51,7 +51,7 @@ gameChooseDD.style.backgroundColor = 'gray';
 gameChooseDD.style.left = '5px';
 gameChooseDD.style.top = '30px';
 let gameNames = ["Games List [Best]", "Minecraft", "Advanced Pixel Apocalypse 3"];
-let gameVals = ["https://gfile-games.glitch.me/list.html", "https://willard.fun/minekhan", "https://inject0r.xyz/apoc"]
+let gameVals = ["https://gfile-games.glitch.me/list.html", "https://willard.fun/minekhan", "https://https://inject0r.paragram.repl.co/apoc"]
 for(i=0; i<gameNames.length; i++){
   let newOp = new Option(gameNames[i], gameVals[i]);
   gameChooseDD.appendChild(newOp);

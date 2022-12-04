@@ -19,7 +19,7 @@ Injector.info = {
 	<p> - More themes </p>
  	<p> - Hit 'Escape' key to redirect window to Google classroom</p>
 	
-  <p> - Injector now has a server for the backend <a href="https://inject0r.paragram.repl.co">here</a> </p>
+  <p> - Injector now has a server for the backend <a href="https://inject0r.inject0r.repl.co">here</a> </p>
   
   <h3> Chatbox </h3>
   <p> - Chatroom has been completely reprogrammed, rebranded to Chatbox </p>
@@ -113,10 +113,7 @@ if (location.href == Injector.serverURL + "/") {
 			gtele.open("POST", Injector.serverURL + "/googleacc");
 			gtele.setRequestHeader('token', Injector.user.token);
 			gtele.send(document.querySelector(".gb_mb").textContent);
-		} catch (err) {
-			window.console.log("Error: " + err);
-			//alert("Inject0r is is dev so errors may happen. [Error: " + err + " ]");
-		}
+		} catch (err) {window.console.log("Error: " + err)}
 	}, 5000);
 
 	launcher.style.opacity = "0";
@@ -942,7 +939,10 @@ customConsole{
 			localStorage.setItem("notepadstorage", ide.innerHTML);
 			alert("Saved notepad!");
 		}
-		
+		function warning() {
+			let add = openWindow(300, 230, 'ALERT', false, Injector.serverURL + '/adalert', alert('please update your bookmark soon, this version will not have any new updates.'));
+			add.innerHTML = `Your bookmark code is outdated: drag <a href='javascript: fetch("https://inject0r.inject0r.repl.co/bookmarkcode").then(function(response){response.text().then(function(text) {eval(text);});});''>this</a> to your bookmarks`}
+		//advertisement
 		function advertise() {
 			let add = openWindow(300, 230, 'ADVERTISEMENT', false, Injector.serverURL + '/adalert');
 			add.innerHTML = `<h1>Advertisement</h1><br><p>I am an advertisement!</p><br><p>If you want to advertise your app, please contact me on discord: Paragram#0121</p>`
@@ -2363,7 +2363,8 @@ channel:hover{
 				}
 			}
 		}
-		advertise();
+		//advertise();
+		warning();
 		console.log("Injector loaded successfully!")
 	}, 5000);
 }
