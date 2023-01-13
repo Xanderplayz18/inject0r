@@ -16,4 +16,4 @@ assignees: Paragramex, ironswordX-dev
 ```YES or NO```
 
 
-# WE DO NOT CHECK GITHUB THAT OFTEN SO PLEASE JOIN DISSCORD
+# NOTICE: We do not check GitHub for token reuests much, so please join the discord!
