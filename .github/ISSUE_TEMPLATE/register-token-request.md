@@ -1,19 +1,9 @@
 ---
-name: Register Token Request
-about: Request a register token in this format
-title: Token Request
-labels: Token Request
+name: Register Token Request [JOIN DISCORD]
+about: Join the discord
+title: THIS PERSON IS AN IDIOT AND SHOULD JOIN THE DISCORD
+labels: Token Request, invalid
 assignees: Paragramex, ironswordX-dev
-
 ---
 
-#### Discord username + tag:
-
-```ANSWER HERE```
-
-#### Do you agree to our disclaimer?
-
-```YES or NO```
-
-
-# NOTICE: We do not check GitHub for token reuests much, so please join the discord!
+# NOTICE: We do not check GitHub for token requests, so please join the discord: [HERE](https://discord.gg/eNy3DEjsRb)
