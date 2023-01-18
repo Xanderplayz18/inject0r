@@ -1,0 +1,36 @@
+name: Other things
+description: Form for other things, such as if you wish to collab ect
+title: "[Other]: "
+labels: ["Other"]
+assignees:
+  - Paragramex
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this form!
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com
+    validations:
+      required: false
+  - type: textarea
+    id: more-info
+    attributes:
+      label: What do you need?
+      description: What do you want/need?
+      placeholder: Wanna Colab?
+      value: "I wanna collab!"
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our disclaimer (on our discord)
+      options:
+        - label: I agree to follow this project's disclaimer
+          required: true
