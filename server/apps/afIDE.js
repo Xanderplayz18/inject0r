@@ -1,1 +1,1 @@
-createNewItem(`NotePad`, `NotePad`, `let ide = openWindow(450, 300, 'NotePad', true, Injector.serverURL + "/notepad.png"); ide.innerHTML = 'notepad doesn\\'t save your work, this may get implamented in the near future'; ide.contentEditable = true;`, Injector.serverURL + "/notepad.png");
+createNewItem(`afIDE`, `afIDE`, `let ide = openWindow(450, 300, 'afIDE', true, Injector.serverURL + "/exploithub.png"); ide.innerHTML = ''; ide.contentEditable = true;`, Injector.serverURL + "/exploithub.png");
